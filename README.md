@@ -17,72 +17,67 @@ Progra-1-Lenguajes
 
 typedef struct sockaddr *sad;
  
-void error(char *s)
-{
+void error(char *s) {
 	exit((perror(s), -1));
-}
+	}
 
 /*El main es la función inicial, aqui se inicia el fork que separara la parte del servidor y la del cliente. Si el resultado de la función es mayor
  o igual a cero significa que la conexión existe y depende si es un cero o no este trbajará cómo cliento o servidor*/
-int main ()
-{
+
+int main () {
 	pid_t hijo;
 	hijo = fork();
-	if (hijo >= 0)
-	{
-		if (hijo == 0)
-		{
+	if (hijo >= 0) {
+		if (hijo == 0) {
 			CL("172.26.97.77", 5000);
-		}
-		else
-		{
+			}
+		else {
 			SL(5000);
+			}
 		}
-	}
-	else
-	{
+	else {
 		perror("fork");
 		exit(0);
-	}
+		}
 	return 0;
-}
+	}
 
 /*función cliente, recibe el ip y el puerto*/
-int CL(char *ip, int puerto)
-{
+
+int CL(char *ip, int puerto) {
 	#define PORT1 puerto
 	int sock;
-    struct sockaddr_in sin;
-    char linea[1024];
-    int largo =128;    
-    /*se inicia la coneccion del cliente para que reconozca al servidor*/
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0))<0)
-        error("socket");
+    	struct sockaddr_in sin;
+    	char linea[1024];
+    	int largo =128;    
+    	/*se inicia la coneccion del cliente para que reconozca al servidor*/
+    	if ((sock = socket(AF_INET, SOCK_STREAM, 0))<0)
+        	error("socket");
         sin.sin_family = AF_INET;
         sin.sin_port = htons(PORT1);
         inet_aton(ip, &sin.sin_addr);
+        
         /* Inicio de la llamada*/
+        
         if (connect(sock, (sad) &sin, sizeof(sin))<0)
                error("connect");
+        
         /*Inicio de la comunicación */
+        
         int sesion = 0;
-        while (sesion != 1)
-        {
-			pid_t hijopid;
-			/* inicio de la Bifurcacion */
-			hijopid = fork();
-			/*parte hijo del fork*/
-			if (hijopid >= 0)
-			{	
-				if (hijopid == 0)
-				{
-					char mensaje[1024];
-					printf("\e[34;01m-");
-					gets (mensaje);
-					if (write (sock,&mensaje,largo) <0 )
-						error("write");
-					if(strcmp(mensaje,"Adios")==0)
-					{
+        while (sesion != 1) {
+        	pid_t hijopid;
+		/* inicio de la Bifurcacion */
+		hijopid = fork();
+		/*parte hijo del fork*/
+		if (hijopid >= 0) {	
+			if (hijopid == 0) {
+				char mensaje[1024];
+				printf("\e[34;01m-");
+				gets (mensaje);
+				if (write (sock,&mensaje,largo) <0 )
+					error("write");
+				if(strcmp(mensaje,"Adios")==0) {
 					return 0;
 					close(sock);
 					exit(0);
@@ -91,48 +86,44 @@ int CL(char *ip, int puerto)
 					return EXIT_SUCCESS;
 					}	
 				}
-				/*Parte padre del fork*/
-				else
-				{
-					if ((largo = read(sock, linea, sizeof(linea))) < 0)
-						error ("read");
-					if(strcmp(linea, "Adios")==0)
-					{
-						printf("Hasta la proxima!");
-						close(0);
-						exit(0);
-						break;
-						system("pause");
-						return EXIT_SUCCESS;
+			/*Parte padre del fork*/
+			else {
+				if ((largo = read(sock, linea, sizeof(linea))) < 0)
+					error ("read");
+				if(strcmp(linea, "Adios")==0) {
+					printf("Hasta la proxima!");
+					close(0);
+					exit(0);
+					break;
+					system("pause");
+					return EXIT_SUCCESS;
 					}
-					linea[largo]=0;
-					printf("\e[35;01m servidor: %s \n", linea);	
+				linea[largo]=0;
+				printf("\e[35;01m servidor: %s \n", linea);	
 				}
-
 			}
-			/*Retorna error si el fork falla*/
-			else
-			{
-				perror("fork");
-				exit(0);
+		/*Retorna error si el fork falla*/
+		else {
+			perror("fork");
+			exit(0);
 			}
 		}
-      
-       return 0;
-}
+      return 0;
+      }
 
 /*función SL recibe el puerto*/
-int SL(int puerto)
-{
+int SL(int puerto) {
 	#define PORT2 puerto
 	int sock, sock1;
-    struct sockaddr_in sin, sin1;
-    char linea[1024];
-    socklen_t conecta;
-    int largo = 128;
-    if ((sock = socket (AF_INET, SOCK_STREAM, 0)) <0)
+    	struct sockaddr_in sin, sin1;
+    	char linea[1024];
+    	socklen_t conecta;
+    	int largo = 128;
+    	if ((sock = socket (AF_INET, SOCK_STREAM, 0)) <0)
 		error("socket");
+        
         /*Se abre el servidor y espera que se conecte un cliente */
+        
         memset(&sin, 0, sizeof sin);
         sin.sin_family = AF_INET;
         sin.sin_port = htons(PORT2);
@@ -140,72 +131,56 @@ int SL(int puerto)
  
         /*re rotarna un error si la busqueda no es acertada*/
         if(bind(sock, (sad) &sin, sizeof sin)<0)
-error ("bind");
+		error ("bind");
  
         /* se define el maximo de clientes*/
         if (listen(sock, 5) < 0)
                 error ("listen");
- 
         /*en la espera de un cliente*/
         conecta = sizeof(sin1);
         if((sock1 = accept(sock, (sad)&sin1, &conecta)) < 0)
-error("accept");
+		error("accept");
 
-while (linea != 0)
-{
-pid_t hijopid;
-/* inicio de la Bifurcacion */
-hijopid = fork();
-if (hijopid >= 0)
-{
-if (hijopid == 0)
-{
-printf("\e[34;01m-");
-gets (linea);
-
-if (write(sock1, linea, largo) < 0)
-error("write");
-
-if(strcmp(linea,"Adios")==0)
-{
-close(sock1);
-close(sock);
-exit(0);
-break;
-system("pause");
-						return EXIT_SUCCESS;
-}
-
-}
-else
-{
-if ((largo = read(sock1, linea, sizeof(linea)))<0)
-                        error("read");
-                        
-                    if(strcmp(linea, "Adios")==0)
-{
-printf("%s",linea);
-close(sock1);
-close(sock);
-exit(0);
-break;
-system("pause");
-						return EXIT_SUCCESS;
-}
-
-                    linea[largo] = 0;
-                    printf("\e[35;01m cliente: %s \n", linea);
-linea[0]++;
-
-}
-}
-
-else
-{
-perror("fork");
-exit(0);
-}
-}
-      
-return 0;
-}
+	while (linea != 0) {
+		pid_t hijopid;
+		/* inicio de la Bifurcacion */
+		hijopid = fork();
+		if (hijopid >= 0) {
+			if (hijopid == 0) {
+				printf("\e[34;01m-");
+				gets (linea);
+				if (write(sock1, linea, largo) < 0)
+					error("write");
+				if(strcmp(linea,"Adios")==0) {
+					close(sock1);
+					close(sock);
+					exit(0);
+					break;
+					system("pause");
+					return EXIT_SUCCESS;
+					}
+				}
+			else {
+				if ((largo = read(sock1, linea, sizeof(linea)))<0)
+                        		error("read");
+                    		if(strcmp(linea, "Adios")==0) {
+					printf("%s",linea);
+					close(sock1);
+					close(sock);
+					exit(0);
+					break;
+					system("pause");
+					return EXIT_SUCCESS;
+					}
+				linea[largo] = 0;
+                    		printf("\e[35;01m cliente: %s \n", linea);
+				linea[0]++;
+				}
+			}
+		else {
+			perror("fork");
+			exit(0);
+			}
+		}
+      return 0;
+      }
