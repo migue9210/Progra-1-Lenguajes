@@ -1,7 +1,7 @@
 Progra-1-Lenguajes
-==================
 
 //Desarrollo de la 1 Tarea Programada
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,14 +16,11 @@ Progra-1-Lenguajes
 #include "progra.h"
 
 typedef struct sockaddr *sad;
- 
-void error(char *s) {
+ void error(char *s) {
 	exit((perror(s), -1));
 	}
-
 /*El main es la función inicial, aqui se inicia el fork que separara la parte del servidor y la del cliente. Si el resultado de la función es mayor
  o igual a cero significa que la conexión existe y depende si es un cero o no este trbajará cómo cliento o servidor*/
-
 int main () {
 	pid_t hijo;
 	hijo = fork();
