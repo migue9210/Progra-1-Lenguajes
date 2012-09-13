@@ -209,3 +209,11 @@ int SL(int puerto) {
 		}
       return 0;
       }
+
+/*Apartir de aqui inicia el codigo del archivo progra.h*/
+
+#ifndef MES_H
+#define MES_H
+int CL(char *ip,int puerto);
+int SL(int puerto2);
+#endif
