@@ -87,6 +87,8 @@ int CL(char *ip, int puerto)
 					close(sock);
 					exit(0);
 					break;
+					system("pause");
+					return EXIT_SUCCESS;
 					}	
 				}
 				/*Parte padre del fork*/
@@ -100,6 +102,8 @@ int CL(char *ip, int puerto)
 						close(0);
 						exit(0);
 						break;
+						system("pause");
+						return EXIT_SUCCESS;
 					}
 					linea[largo]=0;
 					printf("\e[35;01m servidor: %s \n", linea);	
@@ -168,6 +172,8 @@ close(sock1);
 close(sock);
 exit(0);
 break;
+system("pause");
+						return EXIT_SUCCESS;
 }
 
 }
@@ -182,7 +188,10 @@ printf("%s",linea);
 close(sock1);
 close(sock);
 exit(0);
-break;}
+break;
+system("pause");
+						return EXIT_SUCCESS;
+}
 
                     linea[largo] = 0;
                     printf("\e[35;01m cliente: %s \n", linea);
