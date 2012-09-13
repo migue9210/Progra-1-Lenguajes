@@ -16,10 +16,14 @@ Progra-1-Lenguajes
 #include "progra.h"
 
 typedef struct sockaddr *sad;
+ 
 void error(char *s)
 {
-  exit((perror(s), -1));
+	exit((perror(s), -1));
 }
+
+/*El main es la función inicial, aqui se inicia el fork que separara la parte del servidor y la del cliente. Si el resultado de la función es mayor
+ o igual a cero significa que la conexión existe y depende si es un cero o no este trbajará cómo cliento o servidor*/
 int main ()
 {
 	pid_t hijo;
@@ -42,25 +46,32 @@ int main ()
 	}
 	return 0;
 }
+
+/*función cliente, recibe el ip y el puerto*/
 int CL(char *ip, int puerto)
 {
 	#define PORT1 puerto
 	int sock;
     struct sockaddr_in sin;
     char linea[1024];
-    int largo =128;        
+    int largo =128;    
+    /*se inicia la coneccion del cliente para que reconozca al servidor*/
     if ((sock = socket(AF_INET, SOCK_STREAM, 0))<0)
         error("socket");
         sin.sin_family = AF_INET;
         sin.sin_port = htons(PORT1);
-        inet_aton(ip, &sin.sin_addr);        
+        inet_aton(ip, &sin.sin_addr);
+        /* Inicio de la llamada*/
         if (connect(sock, (sad) &sin, sizeof(sin))<0)
-               error("connect");        
+               error("connect");
+        /*Inicio de la comunicación */
         int sesion = 0;
         while (sesion != 1)
         {
-			pid_t hijopid;			
-			hijopid = fork();			
+			pid_t hijopid;
+			/* inicio de la Bifurcacion */
+			hijopid = fork();
+			/*parte hijo del fork*/
 			if (hijopid >= 0)
 			{	
 				if (hijopid == 0)
@@ -75,7 +86,8 @@ int CL(char *ip, int puerto)
 					return 0;
 					shutdown(sock,2);
 					}	
-				}				
+				}
+				/*Parte padre del fork*/
 				else
 				{
 					if ((largo = read(sock, linea, sizeof(linea))) < 0)
@@ -90,7 +102,8 @@ int CL(char *ip, int puerto)
 					printf("\e[35;01m servidor: %s \n", linea);	
 				}
 
-			}			
+			}
+			/*Retorna error si el fork falla*/
 			else
 			{
 				perror("fork");
@@ -100,6 +113,8 @@ int CL(char *ip, int puerto)
       
        return 0;
 }
+
+/*función SL recibe el puerto*/
 int SL(int puerto)
 {
 	#define PORT2 puerto
@@ -109,15 +124,22 @@ int SL(int puerto)
     socklen_t conecta;
     int largo = 128;
     if ((sock = socket (AF_INET, SOCK_STREAM, 0)) <0)
-		error("socket");        
+		error("socket");
+        /*Se abre el servidor y espera que se conecte un cliente */
         memset(&sin, 0, sizeof sin);
         sin.sin_family = AF_INET;
         sin.sin_port = htons(PORT2);
-        sin.sin_addr.s_addr = INADDR_ANY;        
+        sin.sin_addr.s_addr = INADDR_ANY;
+ 
+        /*re rotarna un error si la busqueda no es acertada*/
         if(bind(sock, (sad) &sin, sizeof sin)<0)
 error ("bind");
+ 
+        /* se define el maximo de clientes*/
         if (listen(sock, 5) < 0)
                 error ("listen");
+ 
+        /*en la espera de un cliente*/
         conecta = sizeof(sin1);
         if((sock1 = accept(sock, (sad)&sin1, &conecta)) < 0)
 error("accept");
@@ -125,6 +147,7 @@ error("accept");
 while (linea != 0)
 {
 pid_t hijopid;
+/* inicio de la Bifurcacion */
 hijopid = fork();
 if (hijopid >= 0)
 {
@@ -161,6 +184,7 @@ linea[0]++;
 
 }
 }
+
 else
 {
 perror("fork");
@@ -170,5 +194,3 @@ exit(0);
       
 return 0;
 }
-
-
