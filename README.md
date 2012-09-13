@@ -84,7 +84,9 @@ int CL(char *ip, int puerto)
 					if(strcmp(mensaje,"Adios")==0)
 					{
 					return 0;
-					shutdown(sock,2);
+					close(sock);
+					exit(0);
+					break;
 					}	
 				}
 				/*Parte padre del fork*/
@@ -94,9 +96,10 @@ int CL(char *ip, int puerto)
 						error ("read");
 					if(strcmp(linea, "Adios")==0)
 					{
-						printf("%s",linea);
-						return 0;
-						shutdown(sock,2);
+						printf("Hasta la proxima!");
+						close(0);
+						exit(0);
+						break;
 					}
 					linea[largo]=0;
 					printf("\e[35;01m servidor: %s \n", linea);	
