@@ -39,7 +39,8 @@ int main () {
 	return 0;
 	}
 
-/*función cliente, recibe el ip y el puerto*/
+/*Función cliente, recibe una dirección IP y el número de puertos que acepta el servidor. Se define el puerto de trabajo, un int para el socket, 
+ * la estructura de trabajo para el socket, y un arreglo para insertar el mensaje en él*/
 
 int CL(char *ip, int puerto) {
 	#define PORT1 puerto
@@ -47,14 +48,17 @@ int CL(char *ip, int puerto) {
     	struct sockaddr_in sin;
     	char linea[1024];
     	int largo =128;    
-    	/*se inicia la coneccion del cliente para que reconozca al servidor*/
+
+    	/*Se inicia la coneccion del cliente para que reconozca al servidor, si no es de esa manera envía la palabra socket a la función error 
+     	* para informar al respecto*/
+
     	if ((sock = socket(AF_INET, SOCK_STREAM, 0))<0)
         	error("socket");
         sin.sin_family = AF_INET;
         sin.sin_port = htons(PORT1);
         inet_aton(ip, &sin.sin_addr);
         
-        /* Inicio de la llamada*/
+        /* Inicia la llamada o conexión entre el cliente y el servidor, de no cumplirse se envía connect a la función error*/
         
         if (connect(sock, (sad) &sin, sizeof(sin))<0)
                error("connect");
@@ -64,9 +68,14 @@ int CL(char *ip, int puerto) {
         int sesion = 0;
         while (sesion != 1) {
         	pid_t hijopid;
-		/* inicio de la Bifurcacion */
+		
+		/* Inicio de la Bifurcacion con este sección se facilita la función de enviar y recibir mensajes de manera independiente, en otras palabras no se debe
+		* esperar respuesta por el servidor ni viceversa, haciendo al programa cliente y servidor*/
+			 
 		hijopid = fork();
+
 		/*parte hijo del fork*/
+
 		if (hijopid >= 0) {	
 			if (hijopid == 0) {
 				char mensaje[1024];
@@ -83,7 +92,9 @@ int CL(char *ip, int puerto) {
 					return EXIT_SUCCESS;
 					}	
 				}
+
 			/*Parte padre del fork*/
+
 			else {
 				if ((largo = read(sock, linea, sizeof(linea))) < 0)
 					error ("read");
@@ -99,7 +110,9 @@ int CL(char *ip, int puerto) {
 				printf("\e[35;01m servidor: %s \n", linea);	
 				}
 			}
-		/*Retorna error si el fork falla*/
+
+		/*Retorna error si el fork falla enviando la palabra fork a la función perror*/
+
 		else {
 			perror("fork");
 			exit(0);
@@ -108,7 +121,8 @@ int CL(char *ip, int puerto) {
       return 0;
       }
 
-/*función SL recibe el puerto*/
+/*Función SL recibe el puerto*/
+
 int SL(int puerto) {
 	#define PORT2 puerto
 	int sock, sock1;
@@ -119,30 +133,40 @@ int SL(int puerto) {
     	if ((sock = socket (AF_INET, SOCK_STREAM, 0)) <0)
 		error("socket");
         
-        /*Se abre el servidor y espera que se conecte un cliente */
+        /*Se inicia el servidor a la espera de la conexión de algún cliente */
         
         memset(&sin, 0, sizeof sin);
         sin.sin_family = AF_INET;
         sin.sin_port = htons(PORT2);
         sin.sin_addr.s_addr = INADDR_ANY;
  
-        /*re rotarna un error si la busqueda no es acertada*/
+        /*Se envía la palabra bind a la función error si la busqueda no es acertada y así informarnos al respecto*/
+
         if(bind(sock, (sad) &sin, sizeof sin)<0)
 		error ("bind");
  
-        /* se define el maximo de clientes*/
+        /* Se define el número maximo de clientes con los que se realizará la conexión*/
+
         if (listen(sock, 5) < 0)
                 error ("listen");
-        /*en la espera de un cliente*/
+
+        /* Se mantendrá al servidor a la espera de un cliente, de no conectarse ninguno este enviará la palabra accept a la función error*/
+
         conecta = sizeof(sin1);
         if((sock1 = accept(sock, (sad)&sin1, &conecta)) < 0)
 		error("accept");
 
 	while (linea != 0) {
 		pid_t hijopid;
-		/* inicio de la Bifurcacion */
+
+		/* Inicio de la Bifurcacion con este sección se facilita la función de enviar y recibir mensajes de manera independiente, en otras palabras no se debe
+		 * esperar respuesta por el servidor ni viceversa, haciendo al programa cliente y servidor*/		
+
 		hijopid = fork();
 		if (hijopid >= 0) {
+
+			/*Parte hijo del fork*/
+
 			if (hijopid == 0) {
 				printf("\e[34;01m-");
 				gets (linea);
@@ -157,6 +181,8 @@ int SL(int puerto) {
 					return EXIT_SUCCESS;
 					}
 				}
+			/*Parte padre del fork*/
+
 			else {
 				if ((largo = read(sock1, linea, sizeof(linea)))<0)
                         		error("read");
@@ -174,6 +200,8 @@ int SL(int puerto) {
 				linea[0]++;
 				}
 			}
+		/*Envía la palabra fork a la función perror en caso de que la función falle*/
+
 		else {
 			perror("fork");
 			exit(0);
