@@ -164,9 +164,11 @@ error("write");
 
 if(strcmp(linea,"Adios")==0)
 {
-shutdown(sock1,2);
-shutdown(sock,2);
-return 0;}
+close(sock1);
+close(sock);
+exit(0);
+break;
+}
 
 }
 else
@@ -177,9 +179,10 @@ if ((largo = read(sock1, linea, sizeof(linea)))<0)
                     if(strcmp(linea, "Adios")==0)
 {
 printf("%s",linea);
-shutdown(sock,2);
-                        shutdown(sock1,2);
-                        return 0;}
+close(sock1);
+close(sock);
+exit(0);
+break;}
 
                     linea[largo] = 0;
                     printf("\e[35;01m cliente: %s \n", linea);
