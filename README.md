@@ -1,9 +1,174 @@
 Progra-1-Lenguajes
 ==================
 
-Desarrollo de la 1 Tarea Programada
-Migue y John
+//Desarrollo de la 1 Tarea Programada
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/utsname.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include "progra.h"
 
-int socket (int AF_UNIX, int type, int protocol);
+typedef struct sockaddr *sad;
+void error(char *s)
+{
+  exit((perror(s), -1));
+}
+int main ()
+{
+	pid_t hijo;
+	hijo = fork();
+	if (hijo >= 0)
+	{
+		if (hijo == 0)
+		{
+			CL("172.26.97.77", 5000);
+		}
+		else
+		{
+			SL(5000);
+		}
+	}
+	else
+	{
+		perror("fork");
+		exit(0);
+	}
+	return 0;
+}
+int CL(char *ip, int puerto)
+{
+	#define PORT1 puerto
+	int sock;
+    struct sockaddr_in sin;
+    char linea[1024];
+    int largo =128;        
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0))<0)
+        error("socket");
+        sin.sin_family = AF_INET;
+        sin.sin_port = htons(PORT1);
+        inet_aton(ip, &sin.sin_addr);        
+        if (connect(sock, (sad) &sin, sizeof(sin))<0)
+               error("connect");        
+        int sesion = 0;
+        while (sesion != 1)
+        {
+			pid_t hijopid;			
+			hijopid = fork();			
+			if (hijopid >= 0)
+			{	
+				if (hijopid == 0)
+				{
+					char mensaje[1024];
+					printf("\e[34;01m-");
+					gets (mensaje);
+					if (write (sock,&mensaje,largo) <0 )
+						error("write");
+					if(strcmp(mensaje,"Adios")==0)
+					{
+					return 0;
+					shutdown(sock,2);
+					}	
+				}				
+				else
+				{
+					if ((largo = read(sock, linea, sizeof(linea))) < 0)
+						error ("read");
+					if(strcmp(linea, "Adios")==0)
+					{
+						printf("%s",linea);
+						return 0;
+						shutdown(sock,2);
+					}
+					linea[largo]=0;
+					printf("\e[35;01m servidor: %s \n", linea);	
+				}
+
+			}			
+			else
+			{
+				perror("fork");
+				exit(0);
+			}
+		}
+      
+       return 0;
+}
+int SL(int puerto)
+{
+	#define PORT2 puerto
+	int sock, sock1;
+    struct sockaddr_in sin, sin1;
+    char linea[1024];
+    socklen_t conecta;
+    int largo = 128;
+    if ((sock = socket (AF_INET, SOCK_STREAM, 0)) <0)
+		error("socket");        
+        memset(&sin, 0, sizeof sin);
+        sin.sin_family = AF_INET;
+        sin.sin_port = htons(PORT2);
+        sin.sin_addr.s_addr = INADDR_ANY;        
+        if(bind(sock, (sad) &sin, sizeof sin)<0)
+error ("bind");
+        if (listen(sock, 5) < 0)
+                error ("listen");
+        conecta = sizeof(sin1);
+        if((sock1 = accept(sock, (sad)&sin1, &conecta)) < 0)
+error("accept");
+
+while (linea != 0)
+{
+pid_t hijopid;
+hijopid = fork();
+if (hijopid >= 0)
+{
+if (hijopid == 0)
+{
+printf("\e[34;01m-");
+gets (linea);
+
+if (write(sock1, linea, largo) < 0)
+error("write");
+
+if(strcmp(linea,"Adios")==0)
+{
+shutdown(sock1,2);
+shutdown(sock,2);
+return 0;}
+
+}
+else
+{
+if ((largo = read(sock1, linea, sizeof(linea)))<0)
+                        error("read");
+                        
+                    if(strcmp(linea, "Adios")==0)
+{
+printf("%s",linea);
+shutdown(sock,2);
+                        shutdown(sock1,2);
+                        return 0;}
+
+                    linea[largo] = 0;
+                    printf("\e[35;01m cliente: %s \n", linea);
+linea[0]++;
+
+}
+}
+else
+{
+perror("fork");
+exit(0);
+}
+}
+      
+return 0;
+}
+
+
